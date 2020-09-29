@@ -33,3 +33,44 @@ test "Al estar en la misma posicion que el nido pepita crece" {
 	pepita.irA(nido.position())
 	assert.equals("pepita-grande.png", pepita.image())
 }
+
+test "Al estar en la misma posicion que silvestre pepita está gris" {
+	pepita.irA(game.at(5,0))
+	assert.equals("pepita-gris.png", pepita.image())
+}
+
+test "Pepita cuando viaja mucho y se cansa no se mueve más" {
+	pepita.irA(game.at(10,10))
+	assert.throwsException({ pepita.irA(game.at(7,3)) })
+}
+
+test "Pepita come y la comida desaparece del juego" {
+	game.addVisual(pepita)
+	game.addVisual(alpiste)
+	pepita.irA(alpiste.position())
+	
+	pepita.comerLaComidaQueTenesDebajo()
+	// Verificar que el alpiste no esté en el juego
+	assert.notThat(game.hasVisual(alpiste))
+}
+
+test "Pepita intenta comer una comida lejana" {
+	game.addVisual(pepita)
+	game.addVisual(alpiste)
+	
+	assert.throwsExceptionWithMessage("No hay comida acá", { 
+		pepita.comerLaComidaQueTenesDebajo()
+	}) 
+}
+
+
+////// SILVESTRE
+test "Cuando pepita se mueve Silvestre la persigue" {
+	pepita.irA(game.at(5,5))
+	assert.equals(game.at(5,0), silvestre.position())
+}
+
+test "Silvestre no puede estar a la izquierda" {
+	pepita.irA(game.origin())
+	assert.equals(game.at(3,0), silvestre.position())
+}
