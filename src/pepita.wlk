@@ -7,7 +7,12 @@ object pepita {
 	var property position = game.origin()
 
 	method image() {
-		return if (self.atrapada() or self.estaCansada()) "pepita-gris.png" else if (self.estaEnElNido()) "pepita-grande.png" else "pepita.png"
+		return if (self.atrapada() or self.estaCansada()) 
+			"pepita-gris.png" 
+		else if (self.estaEnElNido()) 
+			"pepita-grande.png" 
+		else 
+			"pepita.png"
 	}
 
 	method come(comida) {
@@ -32,15 +37,34 @@ object pepita {
 	}
 
 	method irA(nuevaPosicion) {
-		self.validarParaMoverse()
+		// Precondiciones
+		self.validarParaMoverse(nuevaPosicion)
+		// Acción
 		self.vola(position.distance(nuevaPosicion))
 		position = nuevaPosicion
+		// Postcondiciones
+		self.checkearSiTerminoElJuego()
+	}
+	
+	method irASiSeMantieneEnLaPantalla(nuevaPosicion) {
+		if (self.estaDentroDeLaPantalla(nuevaPosicion)) {
+			self.irA(nuevaPosicion)
+		}
 	}
 
-	method validarParaMoverse() {
+	method validarParaMoverse(nuevaPosicion) {
 		if (self.estaCansada()) {
 			self.error("Estoy cansada")
 		}
+		if (not self.estaDentroDeLaPantalla(nuevaPosicion)) {
+			self.error("No me puedo salir de la pantalla")
+		}
+	}
+	
+	// Este método podría estar en algún otro objeto que se encargue de la configuración del juego
+	method estaDentroDeLaPantalla(nuevaPosicion) {
+		return 	nuevaPosicion.x().between(0, game.width() - 1)
+		and		nuevaPosicion.y().between(0, game.height() - 1)
 	}
 
 	method estaCansada() {
@@ -53,6 +77,34 @@ object pepita {
 
 	method atrapada() {
 		return position == silvestre.position()
+	}
+	
+	method checkearSiTerminoElJuego() {
+		if (self.estaCansada()) {
+			game.stop()
+		} 
+	}
+	
+	method caerPorGravedad() {
+		const nuevaPosicion = position.down(1)
+		if (self.estaDentroDeLaPantalla(nuevaPosicion)) {
+			position = nuevaPosicion  
+		}
+	}
+	
+	method ganar() {
+		game.say(self, "¡GANE!")
+		self.finalizarJuego()
+	}
+	
+	method perder() {
+		game.say(self, "¡PERDÍ!")
+		self.finalizarJuego()
+	}
+	
+	method finalizarJuego() {
+		// Esto ejecuta el bloque de código una vez en 2 segundos
+		game.schedule(2000, { game.stop() })
 	}
 
 }
